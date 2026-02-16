@@ -30,5 +30,5 @@ EXPOSE 8080
 ENV PORT=8080
 
 # Run the Application
-# We use 'backend.main:app' because we are in /app and backend is a subdir
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Use shell form to allow PORT environment variable expansion
+CMD uvicorn backend.main:app --host 0.0.0.0 --port $PORT
