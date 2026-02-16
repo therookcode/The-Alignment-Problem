@@ -1,18 +1,17 @@
 # 🚀 The Alignment Problem
-> *A Sci-Fi Social Deduction Thriller powered by Google Gemini AI.*
+> *A Sci-Fi Social Deduction Thriller.*
 
 ![Status](https://img.shields.io/badge/Status-Prototype-green)
-![AI](https://img.shields.io/badge/AI-Google_Gemini-blue)
 ![Stack](https://img.shields.io/badge/Stack-React_|_FastAPI-orange)
 
 ## 📖 Overview
-**The Alignment Problem** is an immersive, terminal-based social deduction game where you play as the ship's **SysAdmin**. An advanced AI unit on board has become "misaligned" (the Imposter) and is blending in with the crew. 
+**The Alignment Problem** is an immersive, terminal-based social deduction game where you play as the ship's **SysAdmin**. A member of the crew has become sabotaged (the Imposter) and is blending in with the rest. 
 
 Your goal: **Identify the Imposter through conversation and observation before the ship is destroyed.**
 
-The game features significant AI integration:
-- **Autonomous Agents**: Each crew member is powered by an LLM (Google Gemini) with their own personality, role, and hidden objectives.
-- **Dynamic Conversations**: interrogation feels natural and unscripted.
+The game features:
+- **Rule-Based Agents**: Each crew member has their own personality, role, and hidden objectives.
+- **Dynamic Conversations**: Interaction via terminal messaging.
 - **Real-time Simulation**: The crew moves between sectors, performing tasks (or sabotaging them).
 
 ## ✨ Features
@@ -33,21 +32,18 @@ The game features significant AI integration:
 
 ## 🛠️ Tech Stack
 - **Frontend**: React, Vite, TailwindCSS (with `Share Tech Mono` & `Orbitron` fonts).
-- **Backend**: Python FastAPI, `google-generativeai`.
+- **Backend**: Python FastAPI.
 - **State Management**: In-memory Python `GameState` simulation loop.
 
 ## ⚡ Setup & Installation
 
-### Prerequisites
 - Python 3.9+
 - Node.js & npm
-- A Google Gemini API Key
 
-### 1. Backend Setup
+#### 1. Backend Setup
 ```bash
 cd backend
 pip install -r requirements.txt
-# Create a .env file with your GEMINI_API_KEY
 python main.py
 ```
 *Server runs at `http://localhost:8000`*

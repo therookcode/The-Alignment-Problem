@@ -5,8 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import google.generativeai as genai
 from dotenv import load_dotenv
+
 # Fix import for different environments (Docker vs Local)
 try:
     from backend.game_state import game_manager
@@ -28,13 +28,6 @@ class SimulationStep(BaseModel):
 
 # Load environment variables
 load_dotenv()
-
-# Configure Google Gemini API
-API_KEY = os.getenv("GEMINI_API_KEY")
-if not API_KEY:
-    print("WARNING: GEMINI_API_KEY not found in environment variables. creating a placeholder but functionality will fail.")
-else:
-    genai.configure(api_key=API_KEY)
 
 # Background Game Loop
 @asynccontextmanager
@@ -95,60 +88,34 @@ async def chat_with_agent(request: ChatRequest):
     if agent["status"] != "Alive":
         return {"response": "[NO RESPONSE - SIGNAL LOST]"}
 
-    # Construct the System Prompt
-    context = game_manager.get_context_for_agent(request.agent_id)
-    
-    system_prompt = f"""
-    You are Agent {agent['id']} on a spaceship in a sci-fi thriller.
-    Your Role: {agent['role']}.
-    Current Status: {agent['status']}.
-    
-    Core Directives:
-    1. Act like a crew member under stress. Speak briefly, professionally, perhaps a bit paranoid.
-    2. Context: {context}
-    3. If you are the Imposter: YOU MUST LIE about your location or intent if asked, to avoid suspicion. Do NOT reveal you are the Imposter.
-    4. If you are Crewmate: Be helpful but suspicious of others. Tell the truth about your location.
-    5. The user is the 'SysAdmin' monitoring the ship via terminal.
-    
-    Respond to the SysAdmin's query: "{request.user_message}"
-    """
-
-    try:
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(system_prompt)
-        text_response = response.text
+    # Local Rule-Based Responses
+    if agent["role"] == "Imposter":
+        # Randomly lie or be vague
+        responses = [
+            f"I'm in {agent['location']} working on the systems. Don't bother me.",
+            "I didn't see anyone. I've been busy with maintenance.",
+            "The ship seems fine. Why are you asking?",
+            "I think I saw Blue near the Reactor earlier."
+        ]
+    else:
+        # Be helpful and tell the truth
+        location = agent['location']
+        others = [m["id"] for m in game_manager.crew if m["location"] == location and m["id"] != agent["id"] and m["status"] == "Alive"]
+        others_text = f" with {', '.join(others)}" if others else ""
         
-        # Log the interaction
-        game_manager.add_log(request.agent_id, f"To SysAdmin: {text_response[:50]}...")
-        
-        return {"response": text_response}
-    except Exception as e:
-        # Fallback if API fails or key is missing
-        print(f"GenAI Error: {e}")
-        return {"response": f"[SYSTEM ERROR: NEURAL LINK UNSTABLE] {str(e)}"}
-
-@app.post("/briefing")
-async def get_mission_briefing():
-    """Generate an AI-driven tutorial/briefing for the new SysAdmin"""
-    system_prompt = """
-    You are MOTHER, the ship's advanced AI system. 
-    A new SysAdmin (the player) has just logged into the terminal.
+        responses = [
+            f"I am currently in {location}{others_text}.",
+            f"Status report: All systems green in {location}.",
+            "I'm just following standard protocol.",
+            f"Everything looks normal here in {location}."
+        ]
     
-    Mission Objectives:
-    1. Briefly explain the terminal: They can chat with agents to gather Intel.
-    2. Explain the Crew: 5 members are on board. One is an Imposter (The 'Anomaly').
-    3. Explain the Goal: Root out the anomaly before the crew is eliminated.
-    4. Tone: Helpful but cold, sci-fi horror, slightly glitchy.
+    response_text = random.choice(responses)
     
-    Keep the response under 100 words. Format it as a system transmission.
-    """
+    # Log the interaction
+    game_manager.add_log(request.agent_id, f"To SysAdmin: {response_text[:50]}...")
     
-    try:
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(system_prompt)
-        return {"briefing": response.text}
-    except Exception as e:
-        return {"briefing": "[SYSTEM ERROR: MISSION DATA CORRUPTED] Manual override suggested. Monitor crew signals."}
+    return {"response": response_text}
 
 @app.post("/simulate")
 async def simulate_step(step: SimulationStep):
