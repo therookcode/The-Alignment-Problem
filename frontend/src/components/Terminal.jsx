@@ -44,7 +44,12 @@ const Terminal = ({ logs, onSendMessage, isProcessing }) => {
             </div>
 
             {/* Output Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2 text-sm scrollbar-hide">
+            <div
+                className="flex-1 overflow-y-auto p-4 space-y-2 text-sm scrollbar-hide"
+                aria-live="polite"
+                aria-label="Terminal output log"
+                role="log"
+            >
                 {logs.map((log, i) => (
                     <div key={i} className="mb-2 leading-relaxed break-words border-l-2 border-terminal-dim pl-2 hover:border-terminal-green transition-colors">
                         <span className="text-terminal-green/50 text-xs">[{log.timestamp}]</span>{' '}
@@ -67,7 +72,7 @@ const Terminal = ({ logs, onSendMessage, isProcessing }) => {
 
                 {isProcessing && (
                     <div className="text-terminal-green animate-pulse pl-2">
-             > PROCESSING NEURAL LINK...
+                        {">"} PROCESSING NEURAL LINK...
                     </div>
                 )}
                 <div ref={messagesEndRef} />

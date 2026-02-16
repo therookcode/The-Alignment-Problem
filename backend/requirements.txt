@@ -1,5 +1,7 @@
 fastapi
 uvicorn
 python-dotenv
-google-generativeai
 aiofiles
+pytest
+httpx
+google-cloud-logging

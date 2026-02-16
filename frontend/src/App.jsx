@@ -87,29 +87,29 @@ function App() {
       </div>
 
       {/* HEADER */}
-      <header className="border-b-2 border-terminal-green p-4 flex justify-between items-center bg-black/90 z-20 sticky top-0 backdrop-blur-sm">
+      <header role="banner" className="border-b-2 border-terminal-green p-4 flex justify-between items-center bg-black/90 z-20 sticky top-0 backdrop-blur-sm">
         <h1 className="text-3xl font-bold tracking-widest text-shadow-glow flex items-center gap-3 animate-pulse font-display">
-          <Monitor className="text-terminal-green" />
+          <Monitor className="text-terminal-green" aria-hidden="true" />
           THE-ALIGNMENT-PROBLEM // v1.0
         </h1>
-        <div className="flex items-center gap-6 text-sm font-mono">
-          <div className="flex items-center gap-2 text-terminal-amber">
-            <Cpu size={16} className="animate-spin-slow" />
+        <div className="flex items-center gap-6 text-sm font-mono" aria-label="System Metrics">
+          <div className="flex items-center gap-2 text-terminal-amber" aria-label="CPU Usage">
+            <Cpu size={16} className="animate-spin-slow" aria-hidden="true" />
             <span>CPU: {Math.floor(Math.random() * 20) + 30}%</span>
           </div>
-          <div className="flex items-center gap-2 text-terminal-cyan">
-            <ShieldCheck size={16} />
+          <div className="flex items-center gap-2 text-terminal-cyan" aria-label="Security Status">
+            <ShieldCheck size={16} aria-hidden="true" />
             <span>SECURITY: ENABLED</span>
           </div>
-          <div className="flex items-center gap-2 text-terminal-red animate-pulse">
-            <Radio size={16} />
+          <div className="flex items-center gap-2 text-terminal-red animate-pulse" aria-label="Network Status">
+            <Radio size={16} aria-hidden="true" />
             <span>NET-LINK: SECURE</span>
           </div>
         </div>
       </header>
 
       {/* MAIN CONTENT GRID */}
-      <main className="flex-1 grid grid-cols-12 gap-0 overflow-hidden relative z-10">
+      <main role="main" className="flex-1 grid grid-cols-12 gap-0 overflow-hidden relative z-10">
 
         {/* LEFT COLUMN: AGENT STATUS */}
         <div className="col-span-3 h-full overflow-hidden border-r border-terminal-green/30 bg-black/80 backdrop-blur">
@@ -126,7 +126,7 @@ function App() {
         </div>
 
         {/* RIGHT COLUMN: MAP & ACTIONS */}
-        <div className="col-span-3 h-full flex flex-col bg-black/80 backdrop-blur">
+        <section aria-label="Navigation and Overrides" className="col-span-3 h-full flex flex-col bg-black/80 backdrop-blur">
           <div className="flex-1">
             <ShipMap crew={gameState.crew} />
           </div>
@@ -136,19 +136,19 @@ function App() {
             <h3 className="text-lg font-bold border-b border-terminal-green mb-2 pb-1 font-display">
               COMMAND_OVERRIDES
             </h3>
-            <div className="grid grid-cols-2 gap-2">
-              <button className="bg-terminal-dim hover:bg-terminal-green hover:text-black py-2 px-4 border border-terminal-green text-xs font-bold transition-all uppercase tracking-wider">
+            <div className="grid grid-cols-2 gap-2" role="group" aria-label="Emergency System Overrides">
+              <button aria-label="Call Emergency Meeting" className="bg-terminal-dim hover:bg-terminal-green hover:text-black py-2 px-4 border border-terminal-green text-xs font-bold transition-all uppercase tracking-wider focus:ring-2 focus:ring-terminal-green outline-none">
                 EMERGENCY MEETING
               </button>
-              <button className="bg-terminal-dim hover:bg-terminal-red hover:text-black py-2 px-4 border border-terminal-red text-terminal-red text-xs font-bold transition-all uppercase tracking-wider">
+              <button aria-label="Purge O2 in all sectors" className="bg-terminal-dim hover:bg-terminal-red hover:text-black py-2 px-4 border border-terminal-red text-terminal-red text-xs font-bold transition-all uppercase tracking-wider focus:ring-2 focus:ring-terminal-red outline-none">
                 PURGE O2 (ALL)
               </button>
-              <button className="bg-terminal-dim hover:bg-terminal-amber hover:text-black py-2 px-4 border border-terminal-amber text-terminal-amber text-xs font-bold transition-all col-span-2 uppercase tracking-wider">
+              <button aria-label="Scan Bio-Signatures" className="bg-terminal-dim hover:bg-terminal-amber hover:text-black py-2 px-4 border border-terminal-amber text-terminal-amber text-xs font-bold transition-all col-span-2 uppercase tracking-wider focus:ring-2 focus:ring-terminal-amber outline-none">
                 SCAN BIO-SIGNATURES
               </button>
             </div>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   )
