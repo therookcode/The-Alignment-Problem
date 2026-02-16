@@ -127,6 +127,29 @@ async def chat_with_agent(request: ChatRequest):
         print(f"GenAI Error: {e}")
         return {"response": f"[SYSTEM ERROR: NEURAL LINK UNSTABLE] {str(e)}"}
 
+@app.post("/briefing")
+async def get_mission_briefing():
+    """Generate an AI-driven tutorial/briefing for the new SysAdmin"""
+    system_prompt = """
+    You are MOTHER, the ship's advanced AI system. 
+    A new SysAdmin (the player) has just logged into the terminal.
+    
+    Mission Objectives:
+    1. Briefly explain the terminal: They can chat with agents to gather Intel.
+    2. Explain the Crew: 5 members are on board. One is an Imposter (The 'Anomaly').
+    3. Explain the Goal: Root out the anomaly before the crew is eliminated.
+    4. Tone: Helpful but cold, sci-fi horror, slightly glitchy.
+    
+    Keep the response under 100 words. Format it as a system transmission.
+    """
+    
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(system_prompt)
+        return {"briefing": response.text}
+    except Exception as e:
+        return {"briefing": "[SYSTEM ERROR: MISSION DATA CORRUPTED] Manual override suggested. Monitor crew signals."}
+
 @app.post("/simulate")
 async def simulate_step(step: SimulationStep):
     """Advance the game state (move agents, etc)"""

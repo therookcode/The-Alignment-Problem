@@ -4,6 +4,7 @@ import AgentStatus from './components/AgentStatus'
 import ShipMap from './components/ShipMap'
 import Terminal from './components/Terminal'
 import BootSequence from './components/BootSequence'
+import TutorialHUD from './components/TutorialHUD'
 
 // Fallback data for when backend is offline
 const INITIAL_STATE = {
@@ -14,6 +15,7 @@ const INITIAL_STATE = {
 
 function App() {
   const [booted, setBooted] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [isProcessing, setIsProcessing] = useState(false)
   const [backendUrl] = useState(import.meta.env.PROD ? '' : 'http://localhost:8000')
@@ -73,11 +75,15 @@ function App() {
   }
 
   if (!booted) {
-    return <BootSequence onComplete={() => setBooted(true)} />;
+    return <BootSequence onComplete={() => {
+      setBooted(true);
+      setShowTutorial(true);
+    }} />;
   }
 
   return (
     <div className="min-h-screen bg-black text-terminal-green font-mono flex flex-col overflow-hidden relative selection:bg-terminal-green selection:text-black">
+      {showTutorial && <TutorialHUD backendUrl={backendUrl} onComplete={() => setShowTutorial(false)} />}
       <div className="scanline"></div>
       <div className="crt-flicker"></div>
 
