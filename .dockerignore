@@ -1,8 +1,12 @@
-node_modules
 .git
-__pycache__
-backend/venv
-backend/tests
+.gitignore
+node_modules
 frontend/node_modules
-dist
+backend/venv
+backend/__pycache__
+__pycache__
 .env
+tests
+Dockerfile
+README.md
+*.md
