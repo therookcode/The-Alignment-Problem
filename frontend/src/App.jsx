@@ -16,7 +16,7 @@ function App() {
   const [booted, setBooted] = useState(false);
   const [gameState, setGameState] = useState(INITIAL_STATE)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [backendUrl] = useState('http://localhost:8000') // Adjust if needed
+  const [backendUrl] = useState(import.meta.env.PROD ? '' : 'http://localhost:8000')
 
   // Polling for Game State
   useEffect(() => {
