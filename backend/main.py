@@ -34,27 +34,36 @@ async def game_loop():
         game_manager.move_crew()
         # Optionally add random events here later
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# ... imports ...
+
 app = FastAPI(title="The-Alignment-Problem API", lifespan=lifespan)
 
 # Setup CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For dev only, strict later
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class ChatRequest(BaseModel):
-    agent_id: str
-    user_message: str
+# Serve Frontend (Production Only)
+# We expect the 'dist' folder to be inside or adjacent to backend in the container
+if os.path.exists("frontend/dist"):
+    app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+    
+    @app.get("/")
+    async def read_index():
+        return FileResponse("frontend/dist/index.html")
 
-class SimulationStep(BaseModel):
-    action: str = "tick"
-
-@app.get("/")
-def read_root():
-    return {"status": "System Online", "version": "1.0.0"}
+# Keep the original root API if frontend not present (Dev mode)
+elif not os.path.exists("frontend/dist"):
+    @app.get("/")
+    def read_root():
+        return {"status": "System Online", "version": "1.0.0"}
 
 @app.get("/status")
 def get_status():
