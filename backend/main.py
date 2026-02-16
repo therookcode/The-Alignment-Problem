@@ -7,7 +7,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
 from dotenv import load_dotenv
-from game_state import game_manager
+# Fix import for different environments (Docker vs Local)
+try:
+    from backend.game_state import game_manager
+except ImportError:
+    try:
+        from game_state import game_manager
+    except ImportError:
+        import sys
+        # Last resort: add current directory to sys.path
+        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+        from game_state import game_manager
+
+class ChatRequest(BaseModel):
+    agent_id: str
+    user_message: str
+
+class SimulationStep(BaseModel):
+    action: str = "move"
 
 # Load environment variables
 load_dotenv()
