@@ -9,15 +9,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# Google Cloud Logging Integration
+# Senior Architect Design: Google Cloud Native Observability
 try:
-    import google.cloud.logging
-    client = google.cloud.logging.Client()
-    client.setup_logging()
-    logging.info("Cloud Logging Initialized")
+    from google.cloud import logging as cloud_logging
+    log_client = cloud_logging.Client()
+    # Use standard logging for app logs
+    log_client.setup_logging()
+    # Get a direct logger for specialized Cloud Run logs
+    gcp_logger = log_client.logger("main-logger")
+    gcp_logger.log_text("The-Alignment-Problem System Online")
 except Exception as e:
     logging.basicConfig(level=logging.INFO)
-    logging.info(f"Local Logging Initialized: {e}")
+    logging.info(f"Local Environment Initialized: {e}")
 
 # Fix import for different environments (Docker vs Local)
 try:
@@ -27,7 +30,6 @@ except ImportError:
         from game_state import game_manager
     except ImportError:
         import sys
-        # Last resort: add current directory to sys.path
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
         from game_state import game_manager
 
@@ -38,32 +40,25 @@ class ChatRequest(BaseModel):
 class SimulationStep(BaseModel):
     action: str = "move"
 
-# Load environment variables
 load_dotenv()
 
-# Background Game Loop
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic
-    logging.info("Starting background game loop...")
+    logging.info("CONTAINER_START: Initializing game logic...")
     asyncio.create_task(game_loop())
     yield
-    # Shutdown logic (if any)
-    logging.info("Shutting down...")
+    logging.info("CONTAINER_SHUTDOWN: Cleaning up...")
 
 async def game_loop():
-    """Background task to simulate game events periodically"""
     while True:
-        await asyncio.sleep(10)  # Move every 10 seconds
+        await asyncio.sleep(10)
         game_manager.move_crew()
-        # Optionally add random events here later
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 app = FastAPI(title="The-Alignment-Problem API", lifespan=lifespan)
 
-# Setup CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -72,17 +67,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve Frontend (Production Only)
+# Serve Frontend
 if os.path.exists("frontend/dist"):
     app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
-    
     @app.get("/")
     async def read_index():
         return FileResponse("frontend/dist/index.html")
-elif not os.path.exists("frontend/dist"):
+else:
     @app.get("/")
     def read_root():
-        return {"status": "System Online", "version": "1.0.1"}
+        return {"status": "System Online", "version": "1.0.2"}
 
 @app.get("/status")
 def get_status():
@@ -90,16 +84,13 @@ def get_status():
 
 @app.post("/chat")
 async def chat_with_agent(request: ChatRequest):
-    logging.info(f"Chat request for agent: {request.agent_id}")
     agent = game_manager.get_agent(request.agent_id)
     if not agent:
-        logging.warning(f"Agent {request.agent_id} not found")
         raise HTTPException(status_code=404, detail="Agent not found")
     
     if agent["status"] != "Alive":
         return {"response": "[NO RESPONSE - SIGNAL LOST]"}
 
-    # Local Rule-Based Responses
     if agent["role"] == "Imposter":
         responses = [
             f"I'm in {agent['location']} working on the systems. Don't bother me.",
@@ -111,7 +102,6 @@ async def chat_with_agent(request: ChatRequest):
         location = agent['location']
         others = [m["id"] for m in game_manager.crew if m["location"] == location and m["id"] != agent["id"] and m["status"] == "Alive"]
         others_text = f" with {', '.join(others)}" if others else ""
-        
         responses = [
             f"I am currently in {location}{others_text}.",
             f"Status report: All systems green in {location}.",
@@ -128,8 +118,8 @@ async def simulate_step(step: SimulationStep):
     game_manager.move_crew()
     return {"status": "updated", "data": game_manager.get_game_status()}
 
+# Senior Architect Fix: PORT and HOST binding for Cloud Run
 if __name__ == "__main__":
-    # Use PORT environment variable if available (for Cloud Run)
-    port = int(os.environ.get("PORT", 8000))
-    logging.info(f"Starting server on port {port}")
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    port = int(os.environ.get("PORT", 8080))
+    # host MUST be 0.0.0.0 for Docker/Cloud Run
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
